@@ -1,0 +1,120 @@
+<!DOCTYPE>
+<html lang="en">
+        <meta charset="utf8">
+    <title>Friend Finder</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <body class="container">
+<div class="jumbotron">
+    <div class="container">
+        <h1>Friend Finder</h1>
+        <h3>Friend Results</h3>
+        <div class="text-center">
+          <a href="/"> <button type="button" class="btn btn-primary">View all people</button></a>
+          <a href="/survey"><button type="button" class="btn btn-primary">Take the survey</button></a>
+        <div>
+    </div>   
+</div>
+</div>
+</div>
+<div id = "user">
+<h3>Your Profile</h3>
+<h3>_________________________________________________</h3>
+</div>
+<hr>
+<div id = "matches">
+<h3>Matches</h3>
+<h3>_________________________________________________</h3>
+</div>
+
+<script type="text/javascript">
+    $(document).ready( function() {
+
+
+      $.get("/api/surveyData/", function(data) {
+        console.log(data);
+        if (data) {
+            var lastUser = data[data.length-1]
+            var lastUserScore = (lastUser.scores.slice(',').map(Number)).reduce((a, b) => a + b, 0);
+            var userDiv = $("<div>");
+                var photo = lastUser.photo
+                    if (lastUser.photo == null){
+                        photo = "This user has no photo"
+                    }
+             var photoDiv = $("<img>");
+            photoDiv.attr("src", photo);
+            $(userDiv).addClass("user-divs"),
+            $(userDiv).attr("id, " +lastUser.name)
+            $(userDiv).append("<h2>Name: "+ lastUser.name + "</h2>");
+            $(userDiv).append(photoDiv);
+            $(userDiv).append("<h4>Friend Score: "+lastUserScore + "<h4>");
+            $("#user").append(userDiv);
+            var totalScores = [];
+          for (var i =0; i<data.length-2; i++){
+            console.log(data[i]);
+            var userScore = (data[i].scores.slice(',').map(Number)).reduce((a, b) => a + b, 0);
+            console.log(userScore)
+            totalScores.push(userScore)
+            }
+            var closestNum = (function closest() {
+                var curr = totalScores[0];
+                var diff = Math.abs (lastUserScore - curr);
+                for (var val = 0; val < totalScores.length; val++) {
+                    var newdiff = Math.abs (lastUserScore - totalScores[val]);
+                    if (newdiff < diff) {
+                        diff = newdiff;
+                        curr = totalScores[val];
+                    }
+                }
+                return curr; 
+            })();
+
+           var closestNum = closest(lastUserScore, totalScores)
+            console.log(closestNum,totalScores,lastUserScore);
+
+            for (var i =0; i<data.length-2; i++){
+                var userScore = (data[i].scores.slice(',').map(Number)).reduce((a, b) => a + b, 0);
+                if (closestNum == userScore){
+                    var newDiv = $("<div>");
+                    var photo = data[i].photo
+                    if (data[i].photo == null){
+                        photo = "This user has no photo"
+                    }
+                    var photoDiv = $("<img>");
+                    photoDiv.attr("src", photo);
+                    $(newDiv).addClass("people-divs"),
+                    $(newDiv).attr("id, " +data[i].name)
+                    $(newDiv).append("<h2>Name: "+ data[i].name + "</h2>");
+                    $(newDiv).append(photoDiv);
+                    $(newDiv).append("<h4>Friend Score: "+userScore + "<h4>");
+                    $("#matches").append(newDiv);
+                }
+            }
+            
+
+            //console.log($newDiv.attr("id"))
+          
+         
+       } 
+        else {
+          $("#people").append("You Failed");
+        }
+      });
+    });
+
+            function closest (num, arr) {
+                var curr = arr[0];
+                var diff = Math.abs (num - curr);
+                for (var val = 0; val < arr.length; val++) {
+                    var newdiff = Math.abs (num - arr[val]);
+                    if (newdiff < diff) {
+                        diff = newdiff;
+                        curr = arr[val];
+                    }
+                }
+                return curr;
+            }
+  </script>
